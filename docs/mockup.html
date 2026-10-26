@@ -1,0 +1,443 @@
+<!-- NON-FUNCTIONAL DESIGN MOCK: static layout study for the planned "Showdown Restyler" Tampermonkey userscript. Placeholder boxes only; no real client code, logos or sprites. Gutter dragging, presets, dock chips, theme and the settings drawer are the only live bits. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Showdown Restyler - design mock</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Design tokens: the userscript would swap these per theme ---------- */
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel-2:#1d212a; --raised:#242935;
+  --border:#2a3040; --text:#e6e9f0; --muted:#8b93a7; --accent:#7c8cff; --accent-ink:#0b0d14;
+  --good:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --gutter:6px; --radius:6px;
+  --font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --field-a:#1c2a3d; --field-b:#14202f;
+}
+[data-theme=light]{
+  --bg:#e7e9ef; --panel:#fff; --panel-2:#f3f4f8; --raised:#e9ebf2;
+  --border:#d3d7e2; --text:#1b1f2a; --muted:#5f6779; --accent:#4f5df0; --accent-ink:#fff;
+  --field-a:#dbe6f5; --field-b:#c7d6ec;
+}
+[data-theme=midnight]{
+  --bg:#05060d; --panel:#0b0d1a; --panel-2:#10132a; --raised:#171b38;
+  --border:#1f2447; --text:#dfe4ff; --muted:#7a82b8; --accent:#a78bfa;
+  --field-a:#101840; --field-b:#0a1030;
+}
+[data-theme=custom]{ --accent:#f59e0b; --accent-ink:#1a1100; }
+
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden}
+body{font:12px/1.4 var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- Top bar ---------- */
+.top{height:36px;flex:none;display:flex;align-items:stretch;gap:2px;padding:0 8px;background:var(--panel);border-bottom:1px solid var(--border)}
+.tab{display:flex;align-items:center;gap:6px;padding:0 12px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--text);background:var(--panel-2)}
+.tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.tab .x{opacity:.5;font-size:14px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.top .sp{flex:1}
+.seg{display:flex;align-self:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px;margin-right:8px}
+.seg button{padding:3px 10px;border-radius:4px;color:var(--muted)}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.icon-btn{width:26px;height:26px;border-radius:5px;color:var(--muted);display:grid;place-items:center;font-size:14px;line-height:1}
+.icon-btn:hover{background:var(--raised);color:var(--text)}
+.gear{align-self:center;width:28px;height:28px;font-size:17px}
+.gear.on{background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- Workspace grid ---------- */
+.ws{
+  --c2:380px; --c3:400px; --r1:580px; --r2:150px; --lr1:55%; --sr1:50%;
+  flex:1;min-height:0;padding:var(--gutter);display:grid;
+  grid-template-columns:minmax(0,1fr) var(--gutter) var(--c2) var(--gutter) var(--c3);
+}
+/* Presets only change tokens; dragging writes inline overrides which presets clear. */
+.ws[data-preset=focus]{--c2:320px;--c3:44px;--r1:680px;--r2:140px}
+.ws[data-preset=stream]{--c2:340px;--c3:0px;--r1:700px;--r2:130px}
+.ws[data-preset=focus] .g-side,.ws[data-preset=stream] .g-side{pointer-events:none;opacity:0}
+.col{display:grid;min-width:0;min-height:0}
+.col-main{grid-template-rows:var(--r1) var(--gutter) var(--r2) var(--gutter) minmax(0,1fr)}
+.col-log{grid-template-rows:var(--lr1) var(--gutter) minmax(0,1fr)}
+.col-side{grid-template-rows:var(--sr1) var(--gutter) minmax(0,1fr);overflow:hidden;position:relative}
+.ws[data-preset=focus] .col-side>.panel,.ws[data-preset=focus] .col-side>.gutter{display:none}
+.rail{display:none}
+.ws[data-preset=focus] .rail{display:flex;position:absolute;inset:0}
+.rail{flex-direction:column;align-items:center;gap:6px;padding:8px 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius)}
+.rail .icon-btn{width:32px;height:32px;font-size:11px;font-weight:600}
+.rail .icon-btn.on{background:var(--raised);color:var(--accent)}
+
+.panel{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.ph{flex:none;height:28px;display:flex;align-items:center;gap:6px;padding:0 4px 0 10px;background:var(--panel-2);border-bottom:1px solid var(--border)}
+.ph h2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph .icon-btn{width:22px;height:22px;font-size:13px}
+.pb{flex:1;min-height:0;overflow:auto;padding:8px 10px}
+.ph .chips{display:flex;gap:4px;flex:1}
+.chip{padding:2px 9px;border-radius:99px;border:1px solid var(--border);color:var(--muted);font-size:11px}
+.chip:hover{color:var(--text);border-color:var(--muted)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.scrollbars{scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.pb{scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+/* ---------- Gutters ---------- */
+.gutter{position:relative;touch-action:none;border-radius:3px;transition:background .12s}
+.gutter.v{cursor:col-resize}.gutter.h{cursor:row-resize}
+.gutter::after{ /* grip dots */
+  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,var(--muted) 1px,transparent 1.5px) 0 0/4px 4px;opacity:.55;
+}
+.gutter.v::after{width:4px;height:28px}
+.gutter.h::after{width:28px;height:4px}
+.gutter:hover,.gutter.drag{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.gutter:hover::after,.gutter.drag::after{opacity:1}
+body.dragging{user-select:none}
+body.dragging.cv{cursor:col-resize}body.dragging.ch{cursor:row-resize}
+
+/* ---------- Battle field ---------- */
+.field-wrap{flex:1;min-height:0;container-type:size;display:grid;place-items:center;background:var(--bg)}
+.field{ /* 16:9, fits the panel; real script would scale the 640x360 client with transform */
+  position:relative;width:min(100cqw,calc(100cqh*16/9));aspect-ratio:16/9;overflow:hidden;
+  background:linear-gradient(180deg,var(--field-a),var(--field-b));border-left:1px solid var(--border);border-right:1px solid var(--border)
+}
+.field::before{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;background:repeating-linear-gradient(90deg,transparent 0 48px,rgba(255,255,255,.025) 48px 49px)}
+.badge{position:absolute;left:8px;top:8px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:11px;padding:2px 8px;border-radius:99px;z-index:2}
+.wx{position:absolute;right:8px;top:8px;color:var(--muted);font-size:11px;background:rgba(0,0,0,.25);padding:2px 8px;border-radius:99px}
+.mon{position:absolute;display:grid;place-items:center;border:2px dashed;border-radius:10px;font-weight:600;font-size:13px;text-align:center;color:#fff}
+.mon.opp{right:16%;top:16%;width:20%;aspect-ratio:1;background:rgba(239,68,68,.28);border-color:#ef4444}
+.mon.me{left:14%;bottom:8%;width:26%;aspect-ratio:1;background:rgba(59,130,246,.28);border-color:#3b82f6}
+.plate{position:absolute;background:rgba(10,12,18,.8);border:1px solid var(--border);border-radius:5px;padding:5px 9px;min-width:150px;color:#e6e9f0}
+.plate b{font-weight:600}.plate small{color:#8b93a7;margin-left:6px}
+.plate .hp{height:6px;border-radius:3px;background:#2a3040;margin-top:4px;overflow:hidden}
+.plate .hp i{display:block;height:100%;background:var(--good)}
+.plate.opp{left:16%;top:12%}.plate.me{right:16%;bottom:12%}
+
+/* ---------- Controls ---------- */
+.ctl{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:12px;align-items:stretch}
+.ctl .q{color:var(--muted);margin-bottom:6px}
+.moves{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mv{background:var(--panel-2);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:5px;padding:7px 10px;text-align:left}
+.mv:hover{background:var(--raised)}
+.mv b{display:block;font-weight:600}.mv span{color:var(--muted);font-size:11px}
+.sw{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.sw button{padding:5px;background:var(--panel-2);border:1px solid var(--border);border-radius:5px;color:var(--muted)}
+.sw button:hover{color:var(--text);background:var(--raised)}
+.side-ctl{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.btn{padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--panel-2);text-align:center}
+.btn:hover{background:var(--raised)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+
+/* ---------- Dock: OTS cards ---------- */
+.ots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;height:100%}
+@media(max-width:1500px){.ots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.card .sp{display:flex;align-items:center;gap:7px;font-weight:600}
+.card .ic{width:22px;height:22px;border-radius:4px;background:var(--raised);border:1px dashed var(--muted);flex:none}
+.card .meta{color:var(--muted);font-size:11px}
+.card ul{list-style:none;padding:0;margin-top:3px;display:grid;gap:2px}
+.card li{font-size:11px;padding:1px 6px;background:var(--bg);border-radius:3px;border-left:2px solid var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-box{height:100%;min-height:80px;display:grid;place-items:center;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:6px}
+[hidden]{display:none!important}
+
+/* ---------- Log / chat ---------- */
+.log p{padding:1px 0;color:var(--muted)}
+.log p.t{margin-top:8px;color:var(--text);font-weight:600;border-top:1px solid var(--border);padding-top:6px}
+.log p.t:first-child{margin-top:0;border:0;padding:0}
+.log em{font-style:normal;color:var(--text)}
+.log .r{color:#f87171}.log .b{color:#60a5fa}
+.msg{padding:2px 0}.msg b{font-weight:600}.msg .u1{color:#60a5fa}.msg .u2{color:#f472b6}.msg .u3{color:var(--good)}
+.msg time{color:var(--muted);font-size:10px;margin-right:6px}
+.chat-in{flex:none;display:flex;gap:6px;padding:6px;border-top:1px solid var(--border);background:var(--panel-2)}
+.chat-in input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:6px 9px;color:var(--text);font:inherit}
+.chat-in input:focus{outline:none;border-color:var(--accent)}
+
+/* ---------- Side tabs ---------- */
+.field-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);color:var(--muted)}
+.field-row b{color:var(--text);font-weight:500}
+.bar{height:8px;border-radius:4px;background:var(--bg);margin:6px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--warn);width:62%}
+.row-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.row-item .ic{width:18px;height:18px;border-radius:3px;border:1px dashed var(--muted)}
+.row-item .n{margin-left:auto;color:var(--muted)}
+
+/* ---------- Settings drawer ---------- */
+.drawer{position:fixed;top:36px;right:0;bottom:0;width:340px;background:var(--panel);border-left:1px solid var(--border);box-shadow:-12px 0 32px rgba(0,0,0,.4);transform:translateX(105%);transition:transform .2s ease;z-index:20;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer header{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+.drawer header h1{font-size:14px;font-weight:600;flex:1}
+.drawer header small{color:var(--muted);margin-right:8px}
+.drawer .body{flex:1;overflow:auto;padding:4px 14px 16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.drawer h3{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:600}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pre{border:1px solid var(--border);border-radius:6px;padding:6px;background:var(--panel-2);text-align:center;font-size:11px}
+.pre.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pre i{display:block;height:34px;margin-bottom:4px;border-radius:3px;background:linear-gradient(var(--raised),var(--raised)) 0 0/62% 100% no-repeat,linear-gradient(var(--border),var(--border)) 100% 0/34% 100% no-repeat}
+.pre.f i{background:linear-gradient(var(--raised),var(--raised)) 0 0/72% 100% no-repeat,linear-gradient(var(--border),var(--border)) 78% 0/16% 100% no-repeat,linear-gradient(var(--accent),var(--accent)) 100% 0/6% 100% no-repeat}
+.pre.s i{background:linear-gradient(var(--raised),var(--raised)) 0 0/78% 100% no-repeat,linear-gradient(var(--border),var(--border)) 100% 0/20% 100% no-repeat}
+.set{display:flex;align-items:center;justify-content:space-between;padding:6px 0;gap:10px}
+.set small{display:block;color:var(--muted);font-size:11px}
+.toggle{width:30px;height:17px;border-radius:99px;background:var(--raised);border:1px solid var(--border);position:relative;flex:none;transition:.15s}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--muted);transition:.15s}
+.toggle[aria-checked=true]{background:var(--accent);border-color:var(--accent)}
+.toggle[aria-checked=true]::after{left:15px;background:var(--accent-ink)}
+.range{display:flex;align-items:center;gap:8px}
+.range input{flex:1;accent-color:var(--accent)}
+.seg2{display:flex;gap:6px;margin-bottom:6px}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.swt{border:1px solid var(--border);border-radius:6px;padding:5px;font-size:11px;text-align:center;color:var(--muted)}
+.swt i{display:block;height:22px;border-radius:3px;margin-bottom:4px;border:1px solid rgba(128,128,128,.3)}
+.swt.on{border-color:var(--accent);color:var(--text)}
+.mod{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.mod span{flex:1}.mod small{color:var(--muted)}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- ================= Top tab bar ================= -->
+<nav class="top" aria-label="Rooms">
+  <button class="tab">Home</button>
+  <button class="tab on"><span class="dot"></span>p1 vs p2<span class="x">&times;</span></button>
+  <button class="tab"># lobby-chat<span class="x">&times;</span></button>
+  <button class="tab" aria-label="Open room">+</button>
+  <div class="sp"></div>
+  <div class="seg" id="presetSeg" role="group" aria-label="Layout preset">
+    <button class="on" data-p="wide">Wide battle</button>
+    <button data-p="focus">Focus</button>
+    <button data-p="stream">Stream</button>
+  </div>
+  <button class="icon-btn gear" id="gear" aria-label="Restyler settings" title="Restyler settings">&#9881;</button>
+</nav>
+
+<!-- ================= Workspace ================= -->
+<main class="ws" id="ws" data-preset="wide">
+
+  <!-- Column 1: field / controls / dock -->
+  <section class="col col-main">
+    <div class="panel" id="pField">
+      <div class="field-wrap">
+        <div class="field" id="field">
+          <span class="badge" id="scaleBadge">scale 1.6x</span>
+          <span class="wx">Weather: placeholder &middot; Turn 7</span>
+          <div class="plate opp"><b>Opponent mon A</b><small>L50</small><div class="hp"><i style="width:71%"></i></div></div>
+          <div class="mon opp">Opponent<br>mon A</div>
+          <div class="mon me">Your<br>mon B</div>
+          <div class="plate me"><b>Your mon B</b><small>L50</small><div class="hp"><i style="width:38%;background:var(--warn)"></i></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="gutter h" data-var="--r1" data-target="pField" data-sign="1" data-axis="y" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+
+    <div class="panel" id="pCtl">
+      <div class="pb ctl">
+        <div>
+          <div class="q">What will <b style="color:var(--text)">Your mon B</b> do?</div>
+          <div class="moves">
+            <button class="mv" style="--c:#f97316"><b>Move 1</b><span>Fire &middot; 15/15</span></button>
+            <button class="mv" style="--c:#3b82f6"><b>Move 2</b><span>Water &middot; 10/10</span></button>
+            <button class="mv" style="--c:#22c55e"><b>Move 3</b><span>Grass &middot; 20/20</span></button>
+            <button class="mv" style="--c:#a855f7"><b>Move 4</b><span>Psychic &middot; 8/8</span></button>
+          </div>
+          <div class="sw"><button>Mon A</button><button>Mon C</button><button>Mon D</button><button>Mon E</button><button>Mon F</button><button>Mon G</button></div>
+        </div>
+        <div class="side-ctl">
+          <button class="btn">Mega / Tera</button>
+          <button class="btn">Timer: 0:42</button>
+          <button class="btn pri">Confirm</button>
+        </div>
+      </div>
+    </div>
+    <div class="gutter h" data-var="--r2" data-target="pCtl" data-sign="1" data-axis="y" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+
+    <div class="panel" id="pDock">
+      <div class="ph">
+        <h2 style="flex:none;margin-right:6px">Dock</h2>
+        <div class="chips" id="dockChips">
+          <button class="chip on" data-d="ots">Opp. team sheet</button>
+          <button class="chip" data-d="calc">Damage calc</button>
+          <button class="chip" data-d="notes">Notes</button>
+          <button class="chip" data-d="speed">Speed tiers</button>
+        </div>
+        <button class="icon-btn" aria-label="Collapse">&ndash;</button>
+      </div>
+      <div class="pb">
+        <div class="ots" data-dock="ots">
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 1</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 2</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 3</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 4</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 5</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+          <div class="card"><div class="sp"><span class="ic"></span>Opp mon 6</div><div class="meta">Item &middot; Ability</div><ul><li>Move one</li><li>Move two</li><li>Move three</li><li>Move four</li></ul></div>
+        </div>
+        <div class="ph-box" data-dock="calc" hidden>Damage calc placeholder<br>Attacker &rarr; Defender &middot; range &middot; KO chance</div>
+        <div class="ph-box" data-dock="notes" hidden>Scratch notes placeholder<br>Per-battle, saved locally</div>
+        <div class="ph-box" data-dock="speed" hidden>Speed tier table placeholder</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="gutter v g-log" data-var="--c2" data-target="colLog" data-sign="-1" data-axis="x" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+  <!-- Column 2: log + chat -->
+  <section class="col col-log" id="colLog">
+    <div class="panel" id="pLog">
+      <div class="ph"><h2>Battle log</h2><button class="icon-btn" aria-label="Pop out">&#8599;</button><button class="icon-btn" aria-label="Collapse">&ndash;</button></div>
+      <div class="pb log">
+        <p class="t">Turn 5</p>
+        <p><span class="r">Opponent mon A</span> used <em>Move X</em>!</p>
+        <p>It's super effective!</p>
+        <p><span class="b">Your mon B</span> used <em>Move 2</em>!</p>
+        <p class="t">Turn 6</p>
+        <p><span class="r">Opponent</span> switched to <em>Opp mon 3</em>.</p>
+        <p><span class="b">Your mon B</span> used <em>Move 1</em>!</p>
+        <p>A critical hit!</p>
+        <p class="t">Turn 7</p>
+        <p>Weather placeholder continues.</p>
+      </div>
+    </div>
+    <div class="gutter h" data-var="--lr1" data-target="pLog" data-sign="1" data-axis="y" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+    <div class="panel" id="pChat">
+      <div class="ph"><h2>Chat</h2><button class="icon-btn" aria-label="Pop out">&#8599;</button><button class="icon-btn" aria-label="Collapse">&ndash;</button></div>
+      <div class="pb">
+        <div class="msg"><time>14:02</time><b class="u1">p1</b>: gl hf</div>
+        <div class="msg"><time>14:02</time><b class="u2">p2</b>: gl</div>
+        <div class="msg"><time>14:05</time><b class="u3">spectator</b>: nice read</div>
+      </div>
+      <div class="chat-in"><input placeholder="Message the battle room..." aria-label="Chat message"><button class="btn pri">Send</button></div>
+    </div>
+  </section>
+
+  <div class="gutter v g-side" data-var="--c3" data-target="colSide" data-sign="-1" data-axis="x" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+  <!-- Column 3: two side tabs at once (or icon rail in Focus) -->
+  <section class="col col-side" id="colSide">
+    <div class="panel" id="pS1">
+      <div class="ph"><h2>Calc (Showdex)</h2><button class="icon-btn" aria-label="Pop out">&#8599;</button><button class="icon-btn" aria-label="Collapse">&ndash;</button><button class="icon-btn" aria-label="Close">&times;</button></div>
+      <div class="pb">
+        <div class="field-row"><span>Attacker</span><b>Your mon B</b></div>
+        <div class="field-row"><span>Defender</span><b>Opponent mon A</b></div>
+        <div class="field-row"><span>Move</span><b>Move 1</b></div>
+        <div class="field-row"><span>Damage</span><b>54 &ndash; 64%</b></div>
+        <div class="bar"><i></i></div>
+        <div style="color:var(--muted)">Placeholder: 2HKO 31.3% chance</div>
+      </div>
+    </div>
+    <div class="gutter h" data-var="--sr1" data-target="pS1" data-sign="1" data-axis="y" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+    <div class="panel" id="pS2">
+      <div class="ph"><h2>Mock Regional</h2><button class="icon-btn" aria-label="Pop out">&#8599;</button><button class="icon-btn" aria-label="Collapse">&ndash;</button><button class="icon-btn" aria-label="Close">&times;</button></div>
+      <div class="pb">
+        <div class="row-item"><span class="ic"></span>Round 1 &middot; Opponent X<span class="n">W</span></div>
+        <div class="row-item"><span class="ic"></span>Round 2 &middot; Opponent Y<span class="n">L</span></div>
+        <div class="row-item"><span class="ic"></span>Round 3 &middot; Opponent Z<span class="n">live</span></div>
+        <div class="row-item"><span class="ic"></span>Round 4 &middot; TBD<span class="n">&ndash;</span></div>
+      </div>
+    </div>
+    <div class="rail" aria-label="Side tabs">
+      <button class="icon-btn on" title="Calc (Showdex)">Ca</button>
+      <button class="icon-btn on" title="Mock Regional">MR</button>
+      <button class="icon-btn" title="Add side tab">+</button>
+    </div>
+  </section>
+</main>
+
+<!-- ================= Settings drawer ================= -->
+<aside class="drawer" id="drawer" aria-label="Restyler settings">
+  <header><h1>Restyler settings</h1><small>v0.1 mock</small><button class="icon-btn" id="drawerClose" aria-label="Close">&times;</button></header>
+  <div class="body">
+    <h3>Layout preset</h3>
+    <div class="presets" id="drawerPresets">
+      <button class="pre on" data-p="wide"><i></i>Wide battle</button>
+      <button class="pre f" data-p="focus"><i></i>Focus</button>
+      <button class="pre s" data-p="stream"><i></i>Stream</button>
+    </div>
+
+    <h3>Field scale</h3>
+    <div class="seg2"><button class="chip on">Auto fit</button><button class="chip">Manual</button></div>
+    <div class="range"><input type="range" min="1" max="3" step="0.1" value="1.6" aria-label="Field scale"><span>1.6x</span></div>
+
+    <h3>Options</h3>
+    <div class="set"><div>Split chat from log<small>Separate panels with own headers</small></div><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="set"><div>Show OTS in dock<small>Opponent team sheet under controls</small></div><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="set"><div>Hide chat in battles<small>Log only</small></div><button class="toggle" role="switch" aria-checked="false"></button></div>
+
+    <h3>Theme</h3>
+    <div class="swatches" id="themes">
+      <button class="swt on" data-t="dark"><i style="background:#171a21"></i>Dark</button>
+      <button class="swt" data-t="light"><i style="background:#f3f4f8"></i>Light</button>
+      <button class="swt" data-t="midnight"><i style="background:#0b0d1a"></i>Midnight</button>
+      <button class="swt" data-t="custom"><i style="background:linear-gradient(90deg,#171a21 50%,#f59e0b 50%)"></i>Custom accent</button>
+    </div>
+
+    <h3>Modules</h3>
+    <div class="mod"><span>Layout<br><small>Grid, gutters, presets</small></span><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="mod"><span>Battle scale</span><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="mod"><span>Log / Chat split</span><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="mod"><span>OTS panel</span><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="mod"><span>Multi side-tabs</span><button class="toggle" role="switch" aria-checked="true"></button></div>
+    <div class="mod"><span>Theme</span><button class="toggle" role="switch" aria-checked="true"></button></div>
+  </div>
+</aside>
+
+<script>
+(function(){
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const ws=$('#ws');
+
+  // Gutter dragging: writes a CSS custom property on the grid; tracks resize via var().
+  $$('.gutter').forEach(g=>{
+    g.addEventListener('pointerdown',e=>{
+      const t=document.getElementById(g.dataset.target), x=g.dataset.axis==='x', sign=+g.dataset.sign;
+      const start=x?e.clientX:e.clientY, r=t.getBoundingClientRect(), size0=x?r.width:r.height;
+      const max=(x?ws.clientWidth*.5:ws.clientHeight*.8), min=x?200:70;
+      g.setPointerCapture(e.pointerId); g.classList.add('drag');
+      document.body.classList.add('dragging',x?'cv':'ch');
+      const move=ev=>{
+        const d=((x?ev.clientX:ev.clientY)-start)*sign;
+        ws.style.setProperty(g.dataset.var,Math.max(min,Math.min(max,size0+d))+'px');
+      };
+      const up=()=>{g.classList.remove('drag');document.body.classList.remove('dragging','cv','ch');
+        g.removeEventListener('pointermove',move);g.removeEventListener('pointerup',up);};
+      g.addEventListener('pointermove',move);g.addEventListener('pointerup',up);
+    });
+  });
+
+  // Layout presets (top bar + drawer stay in sync)
+  function setPreset(p){
+    ws.dataset.preset=p; ws.removeAttribute('style'); // clear manual drag overrides
+    $$('#presetSeg button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+    $$('#drawerPresets .pre').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  }
+  $$('#presetSeg button,#drawerPresets .pre').forEach(b=>b.onclick=()=>setPreset(b.dataset.p));
+
+  // Dock chips
+  $$('#dockChips .chip').forEach(c=>c.onclick=()=>{
+    $$('#dockChips .chip').forEach(x=>x.classList.toggle('on',x===c));
+    $$('[data-dock]').forEach(p=>p.hidden=p.dataset.dock!==c.dataset.d);
+  });
+
+  // Scale badge: field width relative to the stock 640px client
+  const field=$('#field'), badge=$('#scaleBadge');
+  new ResizeObserver(()=>{badge.textContent='scale '+(field.clientWidth/640).toFixed(1)+'x'}).observe(field);
+
+  // Drawer, switches, theme
+  const drawer=$('#drawer'), gear=$('#gear');
+  const tog=o=>{drawer.classList.toggle('open',o);gear.classList.toggle('on',o)};
+  gear.onclick=()=>tog(!drawer.classList.contains('open'));
+  $('#drawerClose').onclick=()=>tog(false);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')tog(false)});
+  $$('.toggle').forEach(t=>t.onclick=()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
+  $$('#themes .swt').forEach(s=>s.onclick=()=>{
+    $$('#themes .swt').forEach(x=>x.classList.toggle('on',x===s));
+    document.body.dataset.theme=s.dataset.t;
+  });
+  // Theme tokens live on :root but the attribute is on body; mirror to <html> so :root vars resolve.
+  new MutationObserver(()=>document.documentElement.dataset.theme=document.body.dataset.theme)
+    .observe(document.body,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+</body>
+</html>

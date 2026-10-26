@@ -1,0 +1,15 @@
+{
+  "name": "showdown-restyler",
+  "version": "0.1.0",
+  "description": "Tampermonkey userscript that restyles and rearranges the Pokemon Showdown (Preact) client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
