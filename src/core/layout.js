@@ -9,6 +9,8 @@ export const CLIENT = Object.freeze({
 	fieldH: 360,
 	/** Battle rooms are 'side-by-side' only above this width (also the `tiny-layout` breakpoint). */
 	sideBySideAbove: 780,
+	// Stock field (640) plus a log column that stays readable; below this the stock width is kept.
+	battleMinLeft: 940,
 	/** The client's own reserve beside / below the field; the log and controls need it. */
 	logReserve: 180,
 	controlsReserve: 180,

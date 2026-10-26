@@ -13,7 +13,7 @@ function h(doc, tag, props = {}, ...children) {
 		else if (key in el && key !== 'list') el[key] = value;
 		else el.setAttribute(key, value);
 	}
-	el.append(...children.flat().filter(c => c != null && c !== false));
+	el.append(...children.flat(Infinity).filter(c => c != null && c !== false));
 	return el;
 }
 
@@ -162,10 +162,10 @@ export default {
 					});
 					const head = h(doc, 'label', { class: 'restyler-row' }, info.name, toggle);
 					if (!controls.length) return head;
-					return h(doc, 'details', {
+					return [head, h(doc, 'details', {
 						open: expandedModules.has(info.id),
 						ontoggle: e => (e.target.open ? expandedModules.add(info.id) : expandedModules.delete(info.id)),
-					}, h(doc, 'summary', {}, info.name), controls);
+					}, h(doc, 'summary', {}, `${info.name} options`), controls)];
 				}),
 			];
 		}

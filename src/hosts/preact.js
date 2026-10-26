@@ -98,7 +98,7 @@ export function createPreactHost(win) {
 			const left = PS.leftPanel;
 			const right = PS.rightPanel;
 			const minLeft = left?.type === 'battle' && sideBySidePreferred() ?
-				CLIENT.sideBySideAbove + 1 :
+				CLIENT.battleMinLeft :
 				left ? PS.getWidthFor(left).minWidth : CLIENT.sideBySideAbove + 1;
 			const minRight = right ? PS.getWidthFor(right).minWidth : CLIENT.minRight;
 			return { minLeft, minRight };
