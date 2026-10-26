@@ -193,6 +193,8 @@ These follow directly from the findings above. The full proposal is in @docs/03-
 
 ## 8. Next steps
 
+> **Status:** steps 1 to 5 and the layout spikes are built and released (v0.1.1). What is done and what is next is tracked in [ROADMAP.md](ROADMAP.md). The list below is the original plan, kept for context.
+
 Architecture, module design and layout model: @docs/03-architecture.md. Hook reference: @docs/01-client-internals.md. Compatibility notes: @docs/02-prior-art.md. Visual target: @docs/mockup.html.
 
 1. **Project setup.** esbuild bundling of `src/` into one `.user.js`, the same as Mock Regional Helper. Add the userscript header and page-context injection.

@@ -68,7 +68,7 @@ npm run watch   # rebuilds dist/showdown-restyler.user.js
 npm test
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The research and design behind this are in [RESEARCH.md](RESEARCH.md) and [docs/](docs/).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [roadmap](ROADMAP.md). The research and design behind this are in [RESEARCH.md](RESEARCH.md) and [docs/](docs/).
 
 ## License
 
