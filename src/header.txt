@@ -5,6 +5,9 @@
 // @description  Restyle and rearrange the Pokemon Showdown (new Preact client): bigger battle field, resizable panes.
 // @match        https://play.pokemonshowdown.com/*
 // @run-at       document-idle
+// @downloadURL  https://github.com/definitelybenny/showdown-restyler/releases/latest/download/showdown-restyler.user.js
+// @updateURL    https://github.com/definitelybenny/showdown-restyler/releases/latest/download/showdown-restyler.user.js
+// @license      MIT
 // @noframes
 // @grant        GM_getValue
 // @grant        GM_setValue
