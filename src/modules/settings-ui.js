@@ -138,12 +138,18 @@ export default {
 					if (r.ok) layoutPatch({ battle: { logMin: r.value } });
 				}),
 				h(doc, 'h3', {}, 'Side tabs'),
-				control({ type: 'number', label: 'Tabs shown at once', help: 'Needs the Multiple side tabs module.', min: 1, max: 4, step: 1 }, layout.side.pinned, v => {
+				control({ type: 'number', label: 'Tabs shown at once', help: 'Used when no tabs are pinned. Needs the Multiple side tabs module.', min: 1, max: 4, step: 1 }, layout.side.pinned, v => {
 					const r = coerceValue({ type: 'number', min: 1, max: CLIENT.maxPinned }, v);
 					if (r.ok) layoutPatch({ side: { pinned: Math.round(r.value), sizes: null } });
 				}),
 				control({ type: 'select', label: 'Arrangement', options: [{ value: 'vertical', label: 'Stacked' }, { value: 'horizontal', label: 'Columns' }] },
 					layout.side.split, v => layoutPatch({ side: { split: v === 'horizontal' ? 'horizontal' : 'vertical' } })),
+				control({ type: 'toggle', label: 'Include Home in automatic slots', help: 'Home is skipped unless you focus it.' }, !!layout.side.includeHome,
+					v => layoutPatch({ side: { includeHome: !!v } })),
+				h(doc, 'div', { class: 'restyler-row' },
+					h(doc, 'span', {}, 'Pinned tabs', h(doc, 'small', {}, (layout.side.pinnedRooms || []).length ?
+						(layout.side.pinnedRooms || []).join(', ') : 'Drag a side tab onto the side area to pin it.')),
+					h(doc, 'button', { type: 'button', class: 'restyler-btn', onclick: () => layoutPatch({ side: { pinnedRooms: [] } }) }, 'Clear')),
 				h(doc, 'div', { class: 'restyler-row' }, 'Left panel width',
 					h(doc, 'button', { type: 'button', class: 'restyler-btn', onclick: () => layoutPatch({ leftWidth: null }) }, 'Reset')),
 			];

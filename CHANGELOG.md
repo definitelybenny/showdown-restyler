@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+- Side tabs: drag a tab onto the side area to pin it where you want, with drop zones, unpin chips and a marker on pinned tabs.
+- Home no longer takes an automatic side slot unless focused or enabled in settings.
+- Fix: settings drawer module list; battle log stays readable on narrow windows.
+
 ## 0.1.0
 - Core layout: draggable, persisted gutter; Wide / Focus / Stream presets.
 - Battle field scale beyond 640x360, with sprite scaling option.

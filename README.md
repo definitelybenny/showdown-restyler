@@ -22,12 +22,14 @@ A Tampermonkey userscript that restyles and rearranges the **new (Preact) Pokém
 |---|---|
 | Core layout | Draggable gutter between the battle and the side panel, saved between visits. Double-click it to reset. Presets: Wide, Focus, Stream. |
 | Battle field scale | The field is no longer capped at 640x360. It scales up to fit (up to a limit you set), with an option for sharper or smoother sprites. |
-| Multiple side tabs | Show 1 to N side rooms at once, stacked or in columns. |
+| Multiple side tabs | Drag a side tab onto the side area to place it, like splitting a browser window. Drop zones show where it will land. Pinned tabs are underlined, and a chip on each slot unpins it. Home never takes a slot unless you ask. |
 | Log / Chat split | Chat lines move out of the battle log into their own strip. |
 | Open team sheet | Open team sheets as cards in a panel, instead of a folded section in the log. |
 | Battle dock | The empty space under the battle controls hosts panels (team sheet, chat). Pop a panel out into a side tab or its own window. |
 | Theme | Light, dark or auto, an accent colour and a background, driven through the client's own theme so other scripts follow. |
 | Settings drawer | Gear at the top right. Every module option, plus JSON export and import. |
+
+![Two chat rooms pinned side by side](docs/screenshots/pinned-tabs.jpg)
 
 ![Settings drawer](docs/screenshots/settings-drawer.jpg)
 
@@ -43,6 +45,7 @@ On the classic client the script logs one line to the console and does nothing.
 
 - Click the gear (top right) for settings.
 - Drag the thin bar between the battle and the side panel to resize. Double-click it to reset.
+- Drag a side tab (Showdex, Mock Regional, a chat room) onto the side area and drop it on a zone to show it next to the current tab. Drag it again to reorder, or click the chip on its slot to unpin.
 - Turn off any module in the drawer and the client goes back to stock behaviour for that part.
 - Other scripts can add panels through `window.ShowdownRestyler`:
 

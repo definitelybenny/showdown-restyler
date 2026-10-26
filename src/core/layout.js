@@ -30,7 +30,7 @@ export function defaultLayout() {
 			maxScale: 2,
 			logMin: 300, // px kept free beside the field for the log (never below the client's 180)
 		},
-		side: { pinned: 1, split: 'vertical', sizes: null },
+		side: { pinned: 1, split: 'horizontal', sizes: null, pinnedRooms: [], includeHome: false },
 		presets: { active: null },
 	};
 }
@@ -58,6 +58,8 @@ export function presetLayout(name) {
 	const preset = PRESETS[name];
 	if (!preset) return null;
 	const base = defaultLayout();
+	delete base.side.pinnedRooms; // a preset never touches the user's pinned tabs
+	delete base.side.includeHome;
 	return {
 		...base,
 		leftWidth: preset.leftWidth,

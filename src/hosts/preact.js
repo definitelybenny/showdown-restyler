@@ -104,16 +104,12 @@ export function createPreactHost(win) {
 			return { minLeft, minRight };
 		},
 
-		/** Up to `count` right-hand rooms: the focused right panel first, then the most recently added. */
-		rightRooms(count) {
-			const rooms = [];
-			if (PS.rightPanel) rooms.push(PS.rightPanel);
-			for (let i = PS.rightRoomList.length - 1; i >= 0 && rooms.length < count; i--) {
-				const room = PS.rooms[PS.rightRoomList[i]];
-				if (room && !rooms.includes(room)) rooms.push(room);
-			}
-			return rooms;
-		},
+		/** Ids of the open right-hand rooms, in tab order. */
+		rightRoomIds: () => PS.rightRoomList.filter(id => PS.rooms[id]),
+		focusedRightId: () => PS.rightPanel?.id ?? null,
+
+		/** The rooms for the given ids, skipping any that closed. */
+		roomsByIds: ids => ids.map(id => PS.rooms[id]).filter(Boolean),
 
 		room: id => PS.rooms[id],
 		rooms: () => Object.values(PS.rooms),
