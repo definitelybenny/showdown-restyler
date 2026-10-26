@@ -1,5 +1,13 @@
 import { CLIENT, fitBattle } from '../core/layout.js';
 
+export const SPRITE_RENDERING = ['auto', 'pixelated', 'crisp-edges'];
+
+/** CSS for the sprite scaling option; empty for 'auto' (the browser's default smoothing). */
+export function spriteCss(mode) {
+	if (mode !== 'pixelated' && mode !== 'crisp-edges') return '';
+	return `.battle img{image-rendering:${mode}!important}`;
+}
+
 /**
  * Lets the battle field grow past 640x360. Wraps PS.chooseBattleLayout, which the client calls with
  * the old and new room size on every layout pass, so the wrapper is pure: no DOM reads, no side effects.
@@ -10,7 +18,16 @@ export default {
 	name: 'Battle field scale',
 	clients: ['preact'],
 	requires: ['core-layout'],
-	defaults: {},
+	defaults: { spriteRendering: 'auto' },
+	schema: {
+		spriteRendering: {
+			label: 'Sprite scaling',
+			help: 'How sprites are drawn when the field is scaled past 1x. Pixelated keeps pixel art sharp.',
+			options: SPRITE_RENDERING,
+		},
+	},
+
+	css: settings => spriteCss(settings.spriteRendering),
 
 	setup(ctx) {
 		ctx.patch(...ctx.host.layoutHooks.chooseBattleLayout, function (prev, width, height, preference, ...rest) {

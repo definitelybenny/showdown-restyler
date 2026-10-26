@@ -176,3 +176,15 @@ export function computeLayout(layout, viewport, opts = {}) {
 		sideSlots: sideSlots(layout.side, rect),
 	};
 }
+
+/**
+ * Where the dock goes: directly under the controls, same width, down to the bottom of the room.
+ * Both rects are in the same coordinate space ({top, left, width, height}). Null when too little
+ * height is left to be useful.
+ */
+export function dockRect(controls, room, { gap = 6, minHeight = 80 } = {}) {
+	const top = Math.round(controls.top + controls.height + gap);
+	const height = Math.round(room.top + room.height - top);
+	if (!(controls.width > 0) || height < minHeight) return null;
+	return { top, left: Math.round(controls.left), width: Math.round(controls.width), height };
+}

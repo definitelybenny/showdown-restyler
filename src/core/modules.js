@@ -3,10 +3,11 @@ import { createStyle, addHtmlClass } from './css.js';
 
 /**
  * Module registry. A module is `{ id, name, clients, requires?, defaults, css?, setup(ctx) }`.
- * Everything a module does through `ctx` (patch, on, css, htmlClass, onDispose) is tracked and
- * undone automatically when the module is disabled.
+ * Everything a module does through `ctx` (patch, on, css, htmlClass, panels.register, onDispose) is
+ * tracked and undone automatically when the module is disabled. Optional `schema` gives the settings UI
+ * hints per default key (`label`, `help`, `min`, `max`, `step`, `options`).
  */
-export function createRegistry({ host, settings, bus, doc = document, logger = console }) {
+export function createRegistry({ host, settings, bus, panels = null, panelHosts = null, doc = document, logger = console }) {
 	const modules = new Map();
 	const active = new Map(); // id -> { dispose }
 
@@ -23,8 +24,10 @@ export function createRegistry({ host, settings, bus, doc = document, logger = c
 		return active.has(id);
 	}
 
+	/** On in the settings and so is everything it requires (a disabled dependency takes its dependents down). */
 	function wantedEnabled(mod) {
-		return settings.module(mod.id).enabled ?? mod.enabledByDefault ?? true;
+		const on = settings.module(mod.id).enabled ?? mod.enabledByDefault ?? true;
+		return on && (mod.requires || []).every(dep => modules.has(dep) && wantedEnabled(modules.get(dep)));
 	}
 
 	function makeCtx(mod, disposers) {
@@ -47,6 +50,16 @@ export function createRegistry({ host, settings, bus, doc = document, logger = c
 				flush: () => settings.flush(),
 			},
 			patch: (obj, key, wrapper) => patcher.patch(obj, key, wrapper),
+			emit: (event, payload) => bus.emit(event, payload),
+			/** Module management for the settings UI. */
+			modules: {
+				describe: () => describe(),
+				isEnabled: id => isEnabled(id),
+				setEnabled: (id, on) => setEnabled(id, on),
+				applyAll: () => applyAll(),
+			},
+			/** The whole settings store (export / import / reset); modules use `ctx.settings` and `ctx.layout`. */
+			store: settings,
 			on(event, fn) {
 				const off = bus.on(event, fn);
 				disposers.push(off);
@@ -59,6 +72,17 @@ export function createRegistry({ host, settings, bus, doc = document, logger = c
 				return remove;
 			},
 			onDispose: fn => disposers.push(fn),
+			panels: {
+				register(def) {
+					const off = panels.register(def);
+					disposers.push(off);
+					return off;
+				},
+				mount: (...args) => panels.mount(...args),
+				list: hostName => panels.list(hostName),
+				/** Opens a registered panel in a side room or pop-out ('side' | 'popout'). */
+				open: (id, where) => panelHosts?.openPanel(id, where) ?? null,
+			},
 		};
 
 		if (typeof mod.css === 'function') {
@@ -108,8 +132,15 @@ export function createRegistry({ host, settings, bus, doc = document, logger = c
 		bus.emit('module:disable', id);
 	}
 
-	/** Enables every registered module the settings want on; one failing module does not stop the rest. */
-	function sync() {
+	/**
+	 * Brings the running modules in line with the settings: enables the wanted ones and disables the
+	 * rest. One failing module does not stop the others.
+	 */
+	function applyAll() {
+		for (const mod of modules.values()) {
+			if (wantedEnabled(mod)) continue;
+			disable(mod.id);
+		}
 		for (const mod of modules.values()) {
 			if (!wantedEnabled(mod)) continue;
 			try {
@@ -122,11 +153,23 @@ export function createRegistry({ host, settings, bus, doc = document, logger = c
 	}
 
 	function setEnabled(id, on) {
+		const mod = modules.get(id);
+		if (!mod) throw new Error(`unknown module: ${id}`);
+		// Turning a module on turns its requirements on too, so the choice survives a reload.
+		if (on) for (const dep of mod.requires || []) settings.setModule(dep, { enabled: true });
 		settings.setModule(id, { enabled: on });
-		if (on) enable(id);
-		else disable(id);
-		host.requestLayout();
+		applyAll();
 	}
 
-	return { register, enable, disable, isEnabled, sync, setEnabled, list: () => [...modules.keys()] };
+	/** Metadata the settings UI renders from. */
+	function describe() {
+		return [...modules.values()].map(mod => ({
+			id: mod.id,
+			name: mod.name || mod.id,
+			defaults: mod.defaults || {},
+			schema: mod.schema || {},
+		}));
+	}
+
+	return { register, enable, disable, isEnabled, applyAll, setEnabled, describe, list: () => [...modules.keys()] };
 }

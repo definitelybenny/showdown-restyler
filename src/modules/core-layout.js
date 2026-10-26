@@ -1,11 +1,11 @@
-import { CLIENT, resolveLeftWidth, sideSlots } from '../core/layout.js';
+import { CLIENT, resolveLeftWidth } from '../core/layout.js';
 
 const GUTTER_WIDTH = 7;
 
 /**
- * Left/right split: wraps PS.calculateLeftPanelWidth, one draggable gutter, and (when
- * layout.side.pinned > 1) PSView.posStyle + PS.isVisible so several right-hand rooms render at once.
- * With the defaults it is an exact pass-through apart from the gutter.
+ * Left/right split: wraps PS.calculateLeftPanelWidth and adds one draggable gutter.
+ * With the defaults it is an exact pass-through apart from the gutter. Showing several right-hand
+ * rooms at once is the `multi-side` module.
  */
 export default {
 	id: 'core-layout',
@@ -28,40 +28,6 @@ html.restyler-dragging,html.restyler-dragging *{user-select:none!important;curso
 			if (!(stock > 0)) return stock;
 			const width = resolveLeftWidth(layout.get().leftWidth, host.viewport().width, host.leftWidthLimits());
 			return width ?? stock;
-		});
-
-		function pinnedSlots() {
-			const side = layout.get().side;
-			if (!(side.pinned > 1) || !host.isTwoPanel()) return null;
-			const rooms = host.rightRooms(Math.min(side.pinned, CLIENT.maxPinned));
-			if (rooms.length < 2) return null;
-			const { width, height } = host.viewport();
-			const leftWidth = host.leftPanelWidth();
-			const slots = sideSlots({ ...side, pinned: rooms.length }, {
-				top: CLIENT.topbar,
-				left: leftWidth + 1,
-				width: width - leftWidth - 1,
-				height: height - CLIENT.topbar,
-			});
-			return new Map(rooms.map((room, i) => [room, slots[i]]));
-		}
-
-		ctx.patch(...host.layoutHooks.posStyle, function (prev, room, ...rest) {
-			const slot = pinnedSlots()?.get(room);
-			if (!slot) return prev.call(this, room, ...rest);
-			return {
-				top: `${slot.top}px`,
-				left: `${slot.left}px`,
-				width: `${slot.width}px`,
-				height: `${slot.height}px`,
-				right: 'auto',
-				bottom: 'auto',
-			};
-		});
-
-		ctx.patch(...host.layoutHooks.isVisible, function (prev, room, ...rest) {
-			if (pinnedSlots()?.has(room)) return true;
-			return prev.call(this, room, ...rest);
 		});
 
 		installGutter(ctx);
