@@ -186,9 +186,10 @@ export function computeLayout(layout, viewport, opts = {}) {
  * Both rects are in the same coordinate space ({top, left, width, height}). Null when too little
  * height is left to be useful.
  */
-export function dockRect(controls, room, { gap = 6, minHeight = 80 } = {}) {
+export function dockRect(controls, room, { gap = 6, minHeight = 80, maxHeight = 0 } = {}) {
 	const top = Math.round(controls.top + controls.height + gap);
-	const height = Math.round(room.top + room.height - top);
+	let height = Math.round(room.top + room.height - top);
+	if (maxHeight > 0) height = Math.min(height, Math.max(minHeight, Math.round(maxHeight)));
 	if (!(controls.width > 0) || height < minHeight) return null;
-	return { top, left: Math.round(controls.left), width: Math.round(controls.width), height };
+	return { top: Math.round(room.top + room.height) - height, left: Math.round(controls.left), width: Math.round(controls.width), height };
 }
