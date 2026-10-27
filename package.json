@@ -1,6 +1,6 @@
 {
   "name": "showdown-restyler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tampermonkey userscript that restyles and rearranges the Pokemon Showdown (Preact) client",
   "private": true,
   "type": "module",
