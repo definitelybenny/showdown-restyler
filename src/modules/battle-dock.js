@@ -9,6 +9,13 @@ export function resolveActive(ids, preferred) {
 	return ids[0] ?? null;
 }
 
+/** Lowest visible edge among rects, never above `base`: menus that overflow the controls box must stay uncovered. */
+export function lowestEdge(rects, base) {
+	let bottom = base;
+	for (const r of rects) if (r.width > 0 && r.height > 0 && r.bottom > bottom) bottom = r.bottom;
+	return bottom;
+}
+
 function button(doc, className, label, title, onClick) {
 	const b = doc.createElement('button');
 	b.type = 'button';
@@ -103,13 +110,7 @@ export default {
 				const roomBox = roomEl.getBoundingClientRect();
 				const box = controls ? controls.getBoundingClientRect() : null;
 				// Move and switch menus can overflow the controls box; never cover any visible descendant.
-				let bottom = box ? box.bottom : 0;
-				if (controls) {
-					for (const el of controls.querySelectorAll('*')) {
-						const r = el.getBoundingClientRect();
-						if (r.width > 0 && r.height > 0 && r.bottom > bottom) bottom = r.bottom;
-					}
-				}
+				const bottom = box ? lowestEdge([...controls.querySelectorAll('*')].map(el => el.getBoundingClientRect()), box.bottom) : 0;
 				const rect = box && dockRect(
 					{ top: box.top - roomBox.top, left: box.left - roomBox.left, width: box.width, height: bottom - box.top },
 					{ top: 0, left: 0, width: roomEl.clientWidth, height: roomEl.clientHeight },

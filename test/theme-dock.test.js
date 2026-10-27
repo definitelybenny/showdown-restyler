@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { resolveTheme, inkFor, tokensCss, THEME_NAMES } from '../src/core/theme.js';
 import { dockRect } from '../src/core/layout.js';
 import { clampChatHeight } from '../src/modules/log-chat-split.js';
-import { resolveActive } from '../src/modules/battle-dock.js';
+import { resolveActive, lowestEdge } from '../src/modules/battle-dock.js';
 import { spriteCss } from '../src/modules/battle-scale.js';
 
 test('named presets set the client dark state, auto follows it', () => {
@@ -70,4 +70,16 @@ test('spriteCss only emits for the non-default modes', () => {
 	assert.equal(spriteCss('bogus'), '');
 	assert.match(spriteCss('pixelated'), /image-rendering:pixelated!important/);
 	assert.match(spriteCss('crisp-edges'), /crisp-edges/);
+});
+
+test('lowestEdge keeps overflowing move and switch menus uncovered', () => {
+	assert.equal(lowestEdge([], 300), 300);
+	assert.equal(lowestEdge([{ width: 50, height: 20, bottom: 520 }], 300), 520);
+	assert.equal(lowestEdge([{ width: 0, height: 20, bottom: 900 }, { width: 50, height: 0, bottom: 900 }], 300), 300);
+});
+
+test('dockRect never starts above the lowest control, even with a saved height', () => {
+	const room = { top: 0, left: 0, width: 1000, height: 700 };
+	const r = dockRect({ top: 400, left: 0, width: 780, height: 120 }, room, { maxHeight: 600 });
+	assert.ok(r.top >= 400 + 120);
 });
