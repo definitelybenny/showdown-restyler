@@ -20,6 +20,17 @@ Status as of v0.1.1. The research and design behind this are in [RESEARCH.md](RE
    - Higher-resolution screenshots.
 3. **Known unknowns.** Tab-bar highlight and keyboard focus with several visible side rooms. The client changes often, so re-check after upstream updates (tested against `f49fca9`).
 
+## Skinning (planned)
+
+Today the Theme module only offers presets, an accent colour, a font and a basic recolour. Full skinning, in order:
+
+1. **Custom CSS box.** A text area in the settings drawer, applied live and saved with the settings.
+2. **Token theme editor.** Colour pickers for the main surfaces (panels, chat, log, tabs, buttons, text, borders), plus corner radius and spacing. The client hard-codes about 170 colours with no CSS variables, so each needs mapping to a token.
+3. **Shareable theme presets.** Save, name and export complete skins as JSON, reusing the existing export and import.
+4. **Per-part options.** For example log style, chat bubbles and tab shape.
+
+Risk: the client has no stable style hooks, so skin rules can drift after upstream updates. Keep the mapping in one file and re-check it with each client update.
+
 ## Later
 
 - Classic client adapter.
