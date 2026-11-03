@@ -1,0 +1,106 @@
+{
+  "$schema": "https://definitelybenny.dev/showcase.schema.json",
+  "id": "showdown-restyler",
+  "order": 3,
+  "status": "live",
+  "question": "What if Showdown gave the battle the whole screen?",
+  "game": "Pokémon Showdown",
+  "name": "Pokémon Showdown Restyler",
+  "note": "your first userscript?",
+  "tilt": "-.9deg",
+  "what": "A Tampermonkey script for the new Pokémon Showdown client. The battle field scales up past its old 640 by 360 box, the panes resize, the team sheet and chat get panels of their own, you can pin several side tabs at once, and there’s a light, dark or auto theme. Every part is a module you can switch off.",
+  "useWhen": [
+    "You play on a big monitor and the battle sits in a little box.",
+    "You want Showdex, chat and the team sheet on screen at the same time.",
+    "You stream and want a cleaner layout."
+  ],
+  "thenAsk": [
+    "How do you change a website you don’t own? With a script that runs on top of it.",
+    "Why wrap the page’s own functions instead of replacing them?",
+    "What panel would you add through its API?"
+  ],
+  "links": [
+    {
+      "label": "Get the latest release",
+      "href": "https://github.com/definitelybenny/showdown-restyler/releases/latest",
+      "primary": true
+    },
+    {
+      "label": "See the code",
+      "href": "https://github.com/definitelybenny/showdown-restyler"
+    }
+  ],
+  "next": "pokopia",
+  "detail": {
+    "status": "Live · new Showdown client",
+    "lede": "The Pokémon Showdown Restyler. A bigger battle, panes you can drag, chat and team sheets in their own panels, and a modern theme, built from small modules you can turn on and off.",
+    "what": {
+      "title": "Same Showdown, more room.",
+      "body": [
+        "The stock client keeps the battle in a small box and stacks everything else in one side panel. The Restyler gives the field room to grow and lets you put the things you watch side by side.",
+        "Drag the slider to compare the stock client with the restyled one."
+      ],
+      "callout": "drag it, I dare you",
+      "figure": {
+        "type": "beforeafter",
+        "before": {
+          "src": "docs/screenshots/before.jpg",
+          "alt": "The stock Pokémon Showdown client with a small battle field",
+          "label": "stock"
+        },
+        "after": {
+          "src": "docs/screenshots/after-dark.jpg",
+          "alt": "The restyled client with a large battle field and a dark theme",
+          "label": "restyled"
+        }
+      }
+    },
+    "how": {
+      "title": "Install it once, tweak it forever.",
+      "steps": [
+        {
+          "title": "Install it",
+          "body": "Add Tampermonkey, open the latest release and click showdown-restyler.user.js. It updates itself from there."
+        },
+        {
+          "title": "Open the new client",
+          "body": "It works on the new Showdown client. On the classic one it stays out of the way."
+        },
+        {
+          "title": "Make it yours",
+          "body": "Drag the bar between the battle and the side panel, drop side tabs where you want them, and open the gear for every option."
+        }
+      ],
+      "headsUp": "The new client changes often, so an update on Showdown’s side can break something. Turning a module off puts that part back to stock."
+    },
+    "works": {
+      "title": "Wrap, don’t replace.",
+      "body": [
+        "Showdown has no plugin system, so the script wraps the client’s own functions: it adds its bit and then calls the original. Every patch can be undone, which is how each module switches off cleanly and why it can share the page with Showdex.",
+        "Other scripts get a small API to add panels of their own."
+      ],
+      "code": "// any userscript can add a panel through the Restyler\nShowdownRestyler.registerPanel({\n  id: 'my-panel',\n  title: 'Mine',\n  render(el) { el.textContent = 'hi'; }\n});\n\nShowdownRestyler.on('battle:line', ({ room, args }) => {\n  // args is the parsed protocol line\n});",
+      "callout": "this is the whole API, really"
+    },
+    "ideas": {
+      "title": "Where you could take it next.",
+      "items": [
+        {
+          "tag": "make it yours",
+          "title": "A theme editor",
+          "body": "The client hard-codes about 170 colors with no CSS variables. Map them to tokens and anyone could paint their own skin."
+        },
+        {
+          "tag": "share it",
+          "title": "Theme presets",
+          "body": "Save a whole skin as JSON and pass it to a friend, using the export the settings already have."
+        },
+        {
+          "tag": "build on it",
+          "title": "A panel of your own",
+          "body": "A timer, a damage note, a scouting list. One registerPanel call puts it next to the battle."
+        }
+      ]
+    }
+  }
+}
